@@ -276,6 +276,46 @@ Strict inequality: f(n) < c·g(n).
 
 **Answer:** f(n) ∉ Ω(g(n)), and g(n) ∈ Ω(f(n))
 
+### 🔥 Paper Q99 — Full Worked Solution
+
+**Q:** For defining the best time complexity, let f(n) = log(n) and g(n) = √n.
+Which of the following is true?
+- (A) f(n) ∈ Ω(g(n)), but g(n) ∉ Ω(f(n))
+- (B) f(n) ∉ Ω(g(n)), but g(n) ∈ Ω(f(n))  
+- (C) f(n) ∉ Ω(g(n)), and g(n) ∉ Ω(f(n))
+- (D) f(n) ∈ Ω(g(n)), and g(n) ∈ Ω(f(n))
+
+**Analysis:**
+
+**Step 1:** Compare growth rates:
+- For large n, √n grows MUCH FASTER than log(n)
+- Example: n = 100 → log(100) ≈ 7, √100 = 10
+- Example: n = 10000 → log(10000) ≈ 13, √10000 = 100
+- Example: n = 10^6 → log(10^6) ≈ 20, √(10^6) = 1000
+
+**Step 2:** Apply Big Omega definition:
+- f(n) ∈ Ω(g(n)) means f grows AT LEAST AS FAST as g
+- log n grows SLOWER than √n → so log(n) ∉ Ω(√n) ✓
+- √n grows FASTER than log n → so √n ∈ Ω(log n) ✓
+
+**Step 3:** Match answer:
+- f(n) ∉ Ω(g(n)) ✓
+- g(n) ∈ Ω(f(n)) ✓
+- **Answer: (B)** ✓
+
+### Big O vs Big Omega vs Big Theta — Memory Trick
+
+```
+f(n) = O(g(n))     ← f grows AT MOST as fast as g (upper bound)
+f(n) = Ω(g(n))     ← f grows AT LEAST as fast as g (lower bound)
+f(n) = Θ(g(n))     ← f grows EXACTLY as fast as g (tight bound)
+```
+
+**Quick check for two functions f and g:**
+- If f grows slower → f = O(g) only
+- If f grows faster → f = Ω(g) only
+- If they grow at same rate → f = Θ(g)
+
 ### Growth Rate Comparison (MEMORIZE!)
 ```
 O(1) < O(log log n) < O(log n) < O(√n) < O(n) <
@@ -1496,6 +1536,90 @@ Let me redo more carefully:
 - Last in **postorder** = root
 - Use **inorder** to split left/right subtrees
 
+### 🔥 More Tree-Building Examples (Different Combinations!)
+
+#### Combination 1: Postorder + Inorder → Find Preorder
+
+**Given:**
+- Postorder: D E B F C A
+- Inorder: D B E A F C
+
+**Step 1:** Last in postorder = root → **A**
+
+**Step 2:** Inorder split around A: `D B E | A | F C`
+- Left subtree inorder: D B E (3 nodes)
+- Right subtree inorder: F C (2 nodes)
+
+**Step 3:** Split postorder accordingly:
+- Left subtree postorder (3 nodes): D E B
+- Right subtree postorder (2 nodes): F C
+- Root: A
+
+**Step 4:** Recurse on left (postorder D E B, inorder D B E):
+- Root = B (last in postorder)
+- Split: D | B | E → left=D, right=E
+
+**Step 5:** Recurse on right (postorder F C, inorder F C):
+- Root = C (last)
+- Split: F | C | (empty) → left=F, right=empty
+
+**Tree:**
+```
+        A
+       / \
+      B   C
+     / \  /
+    D  E F
+```
+
+**Preorder = Root, Left, Right:** A B D E C F
+
+#### Combination 2: Level-order + Inorder → Find Preorder/Postorder
+
+**Given:**
+- Level-order: A B C D E F
+- Inorder: D B E A F C
+
+**Step 1:** First in level-order = root → **A**
+
+**Step 2:** Inorder split: `D B E | A | F C`
+- Left subtree: D B E
+- Right subtree: F C
+
+**Step 3:** Find left subtree's level-order from main level-order
+- From {B C D E F}, those in left subtree {D B E}: in level-order = B D E
+- Right subtree level-order: C F
+
+**Step 4:** Recurse on left (level B D E, inorder D B E):
+- Root = B
+- Split: D | B | E
+
+**Step 5:** Recurse on right (level C F, inorder F C):
+- Root = C
+- Split: F | C |
+
+**Same tree as before. Both work!**
+
+### 🔑 Universal Rules
+
+| Given | Find Root From |
+|-------|---------------|
+| Preorder + Inorder | First of preorder |
+| Postorder + Inorder | Last of postorder |
+| Level-order + Inorder | First of level-order |
+
+**Inorder is ALWAYS required** to split into left/right subtrees.
+
+**Cannot uniquely build** with just:
+- Preorder + Postorder (ambiguous for non-full trees)
+- Preorder + Level-order
+- Postorder + Level-order
+
+### Trick for Exam
+When asked "which traversal CANNOT uniquely determine the tree?":
+- **Without inorder**, you usually can't determine uniquely
+- **With inorder** + one of (pre/post/level), you CAN
+
 ---
 
 ## 50. Binary Search Tree (BST)
@@ -1869,6 +1993,38 @@ BFS(start):
 - Web crawling
 - Network broadcasting
 
+### 🔥 CRITICAL BFS THEOREM (Paper Q27 — Asked Directly!)
+
+**BFS Distance Property:**
+> If `u` is visited BEFORE `v` during BFS traversal starting from `r`, then:
+> **d(r, u) ≤ d(r, v)**
+
+**Why?** BFS visits nodes in increasing order of distance from source.
+- Level 0: source (distance 0)
+- Level 1: direct neighbors (distance 1)
+- Level 2: neighbors of neighbors (distance 2)
+- ...
+
+**Key points:**
+- BFS guarantees nodes at distance `k` are visited BEFORE any node at distance `k+1`
+- For two nodes at SAME distance, either could be visited first (depends on adjacency order)
+- This is why BFS finds SHORTEST PATH in unweighted graphs
+
+### Paper Q27 Example
+**Q:** Undirected unweighted graph G. BFS started from r. If u visited before v, which is correct?
+- (A) d(r,u) < d(r,v) — WRONG (could be equal)
+- (B) d(r,u) > d(r,v) — WRONG (impossible)
+- (C) **d(r,u) ≤ d(r,v) — CORRECT!** ✓
+- (D) None of the above
+
+**Answer: C** — BFS visits nodes in non-decreasing order of distance.
+
+### Related BFS Properties
+1. **Shortest path:** BFS finds shortest unweighted paths
+2. **Level by level:** All nodes at level `k` visited before level `k+1`
+3. **First visit = shortest distance:** Once a node is visited, its distance is finalized
+4. **BFS tree property:** Edges in BFS tree are either tree edges (parent-child) or cross edges (same level / one level apart)
+
 ---
 
 ## 62. DFS — Depth First Search
@@ -1990,6 +2146,57 @@ DFS(start):
 - Build systems (make, gradle)
 - Task scheduling
 - Compilation order
+
+---
+
+## 66B. Disjoint Set Union (DSU) / Union-Find
+
+**Data structure to track elements in disjoint sets.** Used in Kruskal's MST.
+
+### Operations
+- **MakeSet(x)** — create a new set with just x
+- **Find(x)** — find which set x belongs to (root of x's tree)
+- **Union(x, y)** — merge sets containing x and y
+
+### Implementation
+```cpp
+int parent[N];
+int rank[N];
+
+void makeSet(int x) {
+   parent[x] = x;
+   rank[x] = 0;
+}
+
+int find(int x) {
+   if (parent[x] != x)
+      parent[x] = find(parent[x]);  // path compression
+   return parent[x];
+}
+
+void unionSets(int x, int y) {
+   int px = find(x), py = find(y);
+   if (px == py) return;
+   // Union by rank
+   if (rank[px] < rank[py]) swap(px, py);
+   parent[py] = px;
+   if (rank[px] == rank[py]) rank[px]++;
+}
+```
+
+### Optimizations
+1. **Path Compression** — flatten tree during find
+2. **Union by Rank/Size** — attach smaller tree under larger
+
+### Complexity
+- With both optimizations: **O(α(n))** (inverse Ackermann, practically constant)
+- Without: O(n) worst case
+
+### Applications
+- **Kruskal's MST** (detect cycles when adding edges)
+- **Connected components** in graphs
+- **Network connectivity**
+- **Equivalence classes**
 
 ---
 
@@ -2511,6 +2718,76 @@ backtrack(state):
 - **Linear** — one recursive call per invocation
 - **Tree** — multiple recursive calls (e.g., Fibonacci)
 
+### 🔥 DETAILED RECURSION TYPES (Often Asked!)
+
+#### 1. Direct Recursion
+Function calls itself directly.
+```cpp
+int factorial(int n) {
+   if (n == 0) return 1;
+   return n * factorial(n-1);  // calls itself
+}
+```
+
+#### 2. Indirect Recursion
+Function A calls B, B calls A (mutual recursion).
+```cpp
+void A() { B(); }
+void B() { A(); }
+```
+
+#### 3. Tail Recursion
+Recursive call is the **LAST** operation.
+```cpp
+// Tail recursive
+int factorial(int n, int acc = 1) {
+   if (n == 0) return acc;
+   return factorial(n-1, n * acc);  // last operation
+}
+```
+**Benefit:** Compiler can optimize to loop (no stack overflow).
+
+#### 4. Head Recursion
+Recursive call is the **FIRST** operation.
+```cpp
+void print(int n) {
+   if (n == 0) return;
+   print(n - 1);     // FIRST operation
+   cout << n;        // Then print
+}
+// Output: 1 2 3 ... n (reverse order printing)
+```
+
+#### 5. Linear Recursion
+Only ONE recursive call per invocation.
+```cpp
+int sum(int n) {
+   if (n == 0) return 0;
+   return n + sum(n-1);  // one recursive call
+}
+```
+
+#### 6. Tree Recursion
+MULTIPLE recursive calls per invocation.
+```cpp
+int fib(int n) {
+   if (n <= 1) return n;
+   return fib(n-1) + fib(n-2);  // TWO recursive calls → tree
+}
+```
+**Time:** O(2^n) due to branching!
+
+### Recursion Comparison
+
+| Type | Recursive Calls | Stack Usage | Example |
+|------|----------------|-------------|---------|
+| Tail | Last operation | Can optimize to O(1) | `factorial(n, acc)` |
+| Head | First operation | O(n) | Reverse print |
+| Linear | 1 per call | O(n) | `sum(n)` |
+| Tree | 2+ per call | Exponential | Fibonacci |
+| Direct | Self-call | Depends | Most recursion |
+| Indirect | Via another fn | Depends | Mutual |
+
 ---
 
 ## 92. Tail Recursion
@@ -2934,6 +3211,113 @@ Then 7 V operations:
 
 ---
 
+### 🔥 BONUS: 25 EXAM-PATTERN MCQs (Directly from Paper Style)
+
+**Q51.** In a binary tree with preorder ABDECF and inorder DBEACF, the postorder is:
+(A) DEBFCA  (B) DEBCFA  (C) BDEFCA  (D) DEFBCA
+**Ans:** Apply rules. Root=A, inorder split: DBE|A|CF. Left preorder=BDE, Right=CF.
+Left tree: Root=B, inorder split: D|B|E → postorder=DEB.
+Right tree: Root=C, inorder split: (empty)|C|F → postorder=FC.
+Final postorder = DEB + FC + A = **DEBFCA**. **Answer: A**
+
+**Q52.** What is max value of top in a stack of size 20 where top is initialized to -1?
+(A) 18  (B) 19  (C) 20  (D) 21
+**Ans: B** (indices 0-19, max top = 19)
+
+**Q53.** Postfix of A*(B+C)/D is:
+(A) ABC+*D/  (B) AB*C+D/  (C) ABC*+/D  (D) ABCD+*/
+**Ans: A** (multiply A and (B+C), then divide by D)
+
+**Q54.** Counting semaphore initialized to 10. After 15 P operations and 8 V operations, value is:
+(A) 3  (B) -3  (C) 17  (D) 33
+**Ans: A** (10 - 15 + 8 = 3)
+
+**Q55.** Building a max heap from [3, 1, 6, 5, 2, 4] gives root:
+(A) 1  (B) 3  (C) 6  (D) 4
+**Ans: C** (max is at root in max heap)
+
+**Q56.** BFS started from node A. Nodes visited in order: A, B, C, D, E. Distance:
+(A) d(A,B) < d(A,C)  (B) d(A,B) = d(A,C)  (C) d(A,B) ≤ d(A,C)  (D) Cannot determine
+**Ans: C** (BFS visits in non-decreasing distance order)
+
+**Q57.** Deleting root from BST {50, 30, 70, 20, 40, 60, 80}, new root can be:
+(A) 30 or 70  (B) 40 or 60  (C) 20 or 80  (D) Any of 30, 40, 60, 70
+**Ans: B** (inorder predecessor=40 OR successor=60)
+
+**Q58.** Time complexity of building heap from n elements:
+(A) O(n)  (B) O(n log n)  (C) O(log n)  (D) O(n²)
+**Ans: A** (heapify-down from n/2 to 0 is O(n))
+
+**Q59.** Which is TRUE about chained hashing vs open addressing?
+(A) Open is faster  (B) Chained needs less memory  (C) Chained handles collisions gracefully  (D) Open never has clustering
+**Ans: C** (chained has no clustering, deletion is easy)
+
+**Q60.** Best time complexity for searching in a sorted array of n elements:
+(A) O(1)  (B) O(log n)  (C) O(n)  (D) O(n log n)
+**Ans: A** (when element is at the middle position checked first)
+
+**Q61.** Number of edges in a complete graph with n vertices (undirected):
+(A) n  (B) n-1  (C) n(n-1)/2  (D) n²
+**Ans: C**
+
+**Q62.** Which sorting algorithm has best space complexity?
+(A) Merge Sort  (B) Quick Sort  (C) Heap Sort  (D) Counting Sort
+**Ans: C** (O(1) in-place)
+
+**Q63.** Recursive function `f(n) = f(n-1) + f(n-2)` has time complexity:
+(A) O(n)  (B) O(n²)  (C) O(2ⁿ)  (D) O(log n)
+**Ans: C** (Fibonacci, exponential)
+
+**Q64.** In a complete binary tree with 100 nodes, height is:
+(A) 6  (B) 7  (C) 50  (D) 99
+**Ans: A** (⌊log₂(100)⌋ = 6, height starts at 0)
+
+**Q65.** Postfix evaluation of `3 4 + 2 *` gives:
+(A) 10  (B) 14  (C) 7  (D) 11
+**Ans: B** (3+4=7, 7*2=14)
+
+**Q66.** Tail recursion vs head recursion difference:
+(A) Tail uses more memory  (B) Head can be optimized to loop  (C) Tail can be optimized to loop  (D) Same
+**Ans: C**
+
+**Q67.** Knapsack problem (0/1) can be optimally solved using:
+(A) Greedy  (B) Dynamic Programming  (C) Linear search  (D) Bubble sort
+**Ans: B** (DP gives optimal; greedy fails for 0/1)
+
+**Q68.** Disjoint Set Union with path compression and union by rank has complexity:
+(A) O(1)  (B) O(α(n))  (C) O(log n)  (D) O(n)
+**Ans: B** (inverse Ackermann, near-constant)
+
+**Q69.** A graph with n nodes and exactly n-1 edges, connected, is a:
+(A) Cyclic graph  (B) Tree  (C) Complete graph  (D) Disconnected
+**Ans: B**
+
+**Q70.** In double hashing, h(k, i) =:
+(A) h1(k) + i  (B) h1(k) + i²  (C) h1(k) + i × h2(k)  (D) h1(k) × i
+**Ans: C**
+
+**Q71.** Quick sort worst case occurs when:
+(A) Array is random  (B) Array is sorted ascending  (C) Array has all equal elements  (D) All of these can cause it
+**Ans: D** (depends on pivot strategy)
+
+**Q72.** Which traversal gives BST elements in descending order?
+(A) Preorder  (B) Inorder  (C) Postorder  (D) Reverse inorder (Right→Root→Left)
+**Ans: D**
+
+**Q73.** Critical section problem in OS is solved using:
+(A) Stacks  (B) Queues  (C) Semaphores  (D) Trees
+**Ans: C**
+
+**Q74.** A binary tree with n leaves has at least how many total nodes?
+(A) n  (B) 2n  (C) 2n-1  (D) n+1
+**Ans: C** (full binary tree minimum)
+
+**Q75.** Which is NOT a stable sort?
+(A) Bubble  (B) Merge  (C) Heap  (D) Insertion
+**Ans: C**
+
+---
+
 ## 100. Final Cheat Sheet & Quick Reference
 
 ### MUST-MEMORIZE TABLES
@@ -3109,3 +3493,112 @@ O(nlogn) < O(n²) < O(n³) < O(2ⁿ) < O(n!) < O(nⁿ)
 > **This single sheet covers EVERY DSA question pattern in your exam.**
 > **Practice the 50 MCQs. Memorize the tables. Trust the patterns.**
 > **You WILL ace the DSA section.** 🎯🚀
+
+---
+
+# ✅ FINAL VERIFICATION: PAPER COVERAGE CHECKLIST
+
+> **EVERY DSA-related question from Paper 119B (June 2022) and Paper 118B (June 2022) verified covered in this sheet.**
+
+## Paper 119B (June 13, 2022) — DSA Questions Coverage
+
+| Question | Topic | Section in Sheet |
+|----------|-------|------------------|
+| Q27 | BFS distance property | Section 61 (BFS Theorem) ✅ |
+| Q35 | Equation prefix notation | Section 25 ✅ |
+| Q36 | Stack max value of top | Section 23 ✅ |
+| Q38 | Queue principle (FIFO) | Section 29 ✅ |
+| Q52 | Postfix conversion | Section 24 ✅ |
+| Q63 | LB/UB algorithm | Section 12 ✅ |
+| Q66 | Chained hashing | Section 68 ✅ |
+| Q67 | Knapsack problem | Section 90 ✅ |
+| Q80 | Heap insertion | Section 57 ✅ |
+| Q87 | Counting semaphore P/V | Section 93 ✅ |
+| Q90 | Queue applications | Section 35 ✅ |
+| Q97 | Stack push operation | Section 20 ✅ |
+| Q98 | Scheduling matching | Section 94 ✅ |
+| Q99 | log n vs √n complexity | Section 5 (detailed!) ✅ |
+
+## Paper 118B (June 18, 2022) — DSA Questions Coverage
+
+| Question | Topic | Section in Sheet |
+|----------|-------|------------------|
+| Q13 | Tree post-order from pre+in | Section 49 (with 3 examples!) ✅ |
+| Q22 | Prefix expression | Section 25 ✅ |
+| Q34 | BST root deletion | Section 52 ✅ |
+| Q35 | Prefix notation | Section 25 ✅ |
+| Q44 | Sorting algorithms | Section 75-84 ✅ |
+| Q62 | Binary vs linear search | Section 73-74 ✅ |
+| Q63 | LB/UB algorithm | Section 12 ✅ |
+| Q66 | Chained hashing advantages | Section 68 ✅ |
+| Q67 | Knapsack | Section 90 ✅ |
+| Q80 | Max heap leaf values | Section 57 ✅ |
+| Q87 | Semaphore arithmetic | Section 93 ✅ |
+| Q97 | Stack insertion (PUSH) | Section 20 ✅ |
+| Q98 | Scheduling match | Section 94 ✅ |
+| Q99 | log n vs √n | Section 5 ✅ |
+
+## 🔥 CRITICAL TOPICS — All Verified Present
+
+✅ **Asymptotic notations** (Big O, Ω, Θ) with worked Paper Q99 example
+✅ **Complexity comparison tables** — All sorting algorithms
+✅ **Tree traversals** — All 4 types (Pre/In/Post/Level)
+✅ **Tree building from traversals** — 2+ worked examples (Pre+In, Post+In)
+✅ **BST insertion + deletion** — Both successor and predecessor methods
+✅ **Heap operations** — Insertion, deletion, heapify with array indices
+✅ **Stack operations** — PUSH/POP/PEEK with overflow/underflow conditions
+✅ **Max value of top** — Formula and explanation (Paper Q36)
+✅ **Infix↔Postfix↔Prefix** — Conversion + evaluation
+✅ **Queue applications** — All 10 applications (Paper Q90)
+✅ **BFS distance theorem** — Paper Q27 exact answer
+✅ **Hash collision** — Chained vs Open addressing comparison
+✅ **Binary search prerequisites** — When NOT to use
+✅ **Semaphore P/V arithmetic** — Step-by-step blocking explanation
+✅ **Knapsack variants** — 0/1 (DP/B&B), Fractional (Greedy)
+✅ **Recursion types** — 6 types with examples
+✅ **DSU/Union-Find** — Bonus addition for completeness
+✅ **75 Practice MCQs** — Including 25 BONUS exam-style questions
+
+## 🎯 Topics Also Covered
+
+- **Tree height/depth formulas** ✅ Section 45
+- **Number of edges in tree** ✅ Section 45 (n-1 edges)
+- **Complete vs Full vs Perfect tree** ✅ Section 46
+- **Time complexity of common algorithms** ✅ Section 6 (table)
+- **Recurrence relations** ✅ Section 9, 10
+- **Master Theorem** ✅ Section 10 with worked examples
+- **Algorithm paradigms** ✅ Section 97
+- **NP-Complete vs P** ✅ Section 96
+- **Algorithm trace examples** ✅ Multiple examples
+- **Stable vs Unstable sorting** ✅ Section 83
+- **In-place sorting** ✅ Section 84
+- **Pattern matching** ✅ Section 16 (KMP, Rabin-Karp)
+- **2D Array address calculation** ✅ Section 13 (row-major/col-major)
+
+## 💪 HONEST ASSESSMENT
+
+**With this single sheet, you will:**
+- ✅ Recognize every DSA pattern in the paper
+- ✅ Apply correct formulas (heap indices, address calculation, etc.)
+- ✅ Trace algorithms step-by-step
+- ✅ Compare complexities accurately
+- ✅ Solve postfix/prefix conversions confidently
+- ✅ Build trees from given traversals
+- ✅ Handle semaphore arithmetic
+- ✅ Identify scheduling algorithm properties
+- ✅ Apply BFS/DFS theorems
+- ✅ Choose right algorithm for given problem
+
+**What this sheet WILL NOT do:**
+- ❌ Cover specific Rajasthan-only topics outside CS (separate analysis sheet)
+- ❌ Replace 5-10 past paper practices
+- ❌ Make you faster without timing practice
+
+**Recommendation:**
+1. Read entire sheet ONCE thoroughly (4-6 hours)
+2. Memorize all comparison tables in Section 100
+3. Solve all 75 practice MCQs
+4. Re-do the actual paper questions and check against sheet
+5. Time yourself on past papers
+
+**Bro, you ARE prepared. Trust the preparation. Execute on exam day.** 🚀💪
